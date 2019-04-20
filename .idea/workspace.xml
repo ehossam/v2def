@@ -15,8 +15,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/v2def">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="112">
-              <caret line="69" column="41" selection-start-line="69" selection-start-column="21" selection-end-line="69" selection-end-column="41" />
+            <state relative-caret-position="218">
+              <caret line="140" column="46" lean-forward="true" selection-start-line="140" selection-start-column="46" selection-end-line="140" selection-end-column="46" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -25,6 +25,12 @@
         </entry>
       </file>
     </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>flag_found_cell_name</find>
+      <find>layers_orient_pitch</find>
+    </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -88,8 +94,8 @@
       <window_info id="Structure" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Educational.CheckDetails" />
       <window_info anchor="bottom" id="Version Control" />
-      <window_info active="true" anchor="bottom" id="Terminal" visible="true" weight="0.34423676" />
-      <window_info anchor="bottom" id="Python Console" />
+      <window_info active="true" anchor="bottom" id="Terminal" visible="true" weight="0.2741433" />
+      <window_info anchor="bottom" id="Python Console" weight="0.32866043" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Run" order="2" />
@@ -105,8 +111,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/v2def">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="112">
-          <caret line="69" column="41" selection-start-line="69" selection-start-column="21" selection-end-line="69" selection-end-column="41" />
+        <state relative-caret-position="218">
+          <caret line="140" column="46" lean-forward="true" selection-start-line="140" selection-start-column="46" selection-end-line="140" selection-end-column="46" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>

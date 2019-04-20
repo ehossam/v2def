@@ -26,71 +26,131 @@ nets= pins_temp[0].items()[2]          #get all the actual nets
 #leffile_data=open(leffile,'r')
 
 layer_names={'metal1','metal2','metal3','metal4','metal5','metal6'}
-layers_pitch={}
+layers_orient_pitch={}
 cells_sizes={}
+vias={}
 flag_found_layer_name=0 #used for parsing logic
 flag_found_unit=0    #used for parsing logic
 flag_found_cell_name=0  #used for parsing logic
+flag_found_via_name=0
+flag_unfinished_unit=1
+flag_unfinished_cells=1
+flag_unfinished_layers=1
+flag_unfinished_vias=1
 
 with open(leffile, 'r') as lf:
     for line in lf:
         try:
             first_word= line.split()[0]
-            if (first_word == 'LAYER'):
-                try:
-                    second_word=line.split()[1]
-                    if (second_word in layer_names):
-                        flag_found_layer_name=1
-                        value_found_layer_name=second_word
-                except:
-                    pass
-            if (flag_found_layer_name):
-                if(first_word == 'PITCH'):  #dont add until you find the pitch value
+            if(flag_unfinished_layers==1 and flag_unfinished_unit==0):
+                #print "here"
+                if (first_word == 'LAYER'):
                     try:
-                        second_word= second_word=line.split()[1]
-                        layers_pitch[value_found_layer_name]=second_word
-                        flag_found_layer_name=0
+                        second_word=line.split()[1]
+                        if (second_word in layer_names):
+                            flag_found_layer_name=1
+                            value_found_layer_name=second_word
                     except:
                         pass
-            if(first_word == 'UNITS'):    #we then know for sure that the following line conntains the used micron anyways
-                flag_found_unit=1
-                #print "yeey"
-            elif(flag_found_unit==1):
-                if (first_word == 'DATABASE'):
+                if (flag_found_layer_name ==1):
+                    if(first_word == 'DIRECTION'):  #get the direction for this layer
+                        try:
+                            second_word=line.split()[1]
+                            #print second_word
+                            layers_orient_pitch[value_found_layer_name]=[]
+                            if(second_word == 'HORIZONTAL'):
+                                layers_orient_pitch[value_found_layer_name].append('Y') #make it Y as in the sample
+                            elif(second_word == 'VERTICAL'):
+                                layers_orient_pitch[value_found_layer_name].append('X') #make it Y as in the sample
+                            else:
+                                pass
+                        except:
+                            pass
+                    elif(first_word == 'PITCH'):  #dont add until you find the pitch value
+                        try:
+                            second_word= line.split()[1]
+                            layers_orient_pitch[value_found_layer_name].append(second_word) #add it to a list
+                            #print layers_orient_pitch[value_found_layer_name]
+                            #print "reacjed"
+                            flag_found_layer_name=0
+                        except:
+                            pass
+            if(flag_unfinished_unit==1):
+                if(first_word == 'UNITS'):    #we then know for sure that the following line conntains the used micron anyways
+                    flag_found_unit=1
+                    flag_found_layer_name=0
+                    flag_found_cell_name=0
+
+                    #print "yeey"
+                elif(flag_found_unit==1):
+                    if (first_word == 'DATABASE'):
+                        try:
+                            second_word=line.split()[2]     #get the value of the microns
+                            #print second_word
+                            micron_value= int(second_word)
+                            flag_found_unit=0
+                            flag_unfinished_unit=0
+                        except:
+                            pass
+            if(flag_unfinished_cells==1 and flag_unfinished_unit==0):
+                if(first_word == 'MACRO'):    #we then know for sure that its one of the cells we need anyways
+                    flag_unfinished_unit=0
+                    flag_unfinished_vias=0
+                    #print "got here"
                     try:
-                        second_word=line.split()[2]     #get the value of the microns
-                        #print second_word
-                        micron_value= int(second_word)
-                        flag_found_unit=0
+                         second_word=line.split()[1]     #get the name of needed cell
+                         #print second_word
+                         flag_found_cell_name=1
+                         value_found_cell_name=second_word
+                         flag_found_unit=0
+                         flag_found_layer_name=0
                     except:
                         pass
-            if(first_word == 'MACRO'):    #we then know for sure that its one of the cells we need anyways
-                try:
-                     second_word=line.split()[1]     #get the name of needed cell
-                     #print second_word
-                     flag_found_cell_name=1
-                     value_found_cell_name=second_word
-                except:
-                    pass
-            elif(flag_found_cell_name ==1):
-                if(first_word=='SIZE'):     #parse needed area; no need for all size
+                elif(flag_found_cell_name ==1):
+                    if(first_word=='SIZE'):     #parse needed area; no need for all size
+                        try:
+                            #print "reached here"
+                            second_word=line.split()[1]     #get the value of the cell width
+                            area=float(second_word)
+                            #print area
+                            fourth_word=line.split()[3]     #get the value of the cell height
+                            area=area*float(fourth_word)
+                            cells_sizes[value_found_cell_name]=area
+                            flag_found_cell_name=0
+                        except:
+                            pass
+            if(flag_unfinished_vias==1 and flag_unfinished_cells==1 and flag_unfinished_unit==0):
+                if (first_word== 'VIA'):
+                    flag_unfinished_layers=0
                     try:
-                        #print "reached here"
-                        second_word=line.split()[1]     #get the value of the cell width
-                        area=float(second_word)
-                        #print area
-                        fourth_word=line.split()[3]     #get the value of the cell height
-                        area=area*float(fourth_word)
-                        cells_sizes[value_found_cell_name]=area
-                        flag_found_cell_name=0
+                        second_word=line.split()[1] #get the name of the via metal
+                        flag_found_via_name=1
+                        value_found_via_name =second_word
+                        vias[value_found_via_name]={}
                     except:
                         pass
+                if(flag_found_via_name):
+                    if(first_word == 'LAYER'):
+                        try:
+                            name_of_the_layer=line.split()[1]
+                            vias[value_found_via_name][name_of_the_layer]=[]
+                        except:
+                            pass
+                    elif(first_word=='RECT'):
+                        try:
+                            for i in range(4):
+                                #print i
+                                vias[value_found_via_name][name_of_the_layer].append(line.split()[i+1])
+                        except:
+                            pass
+                if(first_word== 'VIARULE'):
+                    flag_unfinished_vias=0
         except:
             pass
 
-print 'layers_pitch:: ', layers_pitch
+print 'layers_orient_pitch:: ', layers_orient_pitch
 print 'micron_value:: ', micron_value
 print 'cell_areas::', cells_sizes
-
+print 'vias_names::', vias
 #print(datastore.keys()[0])
 #print (datastore["modules"][0])
