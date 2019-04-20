@@ -1,6 +1,14 @@
 import json
+import sys
 
-jsonfile= raw_input('please enter the json file name [output of yosys]: ')
+if len(sys.argv) <3:
+    print ('usage is python v2def jsonfilename leffile')
+    exit(1)
+jsonfile=sys.argv[1]
+leffile=sys.argv[2]
+#print jsonfile
+#jsonfile= raw_input('please enter the json file name [output of yosys]: ')
+
 #Read JSON data into the datastore variable
 if jsonfile:
     with open(jsonfile, 'r') as f:
@@ -11,10 +19,78 @@ pins_temp=modules_temp[1].values()  #get all attributes,cells,ports with their v
 pins=pins_temp[0].items()[3]       #get the actual pins behaviour
 components=pins_temp[0].items()[1]       #get all the cells
 nets= pins_temp[0].items()[2]          #get all the actual nets
-print(nets)
+#print(nets)
 
 #now read the lef file
+#leffile=raw_input('please enter the lef file name: ')
+#leffile_data=open(leffile,'r')
 
+layer_names={'metal1','metal2','metal3','metal4','metal5','metal6'}
+layers_pitch={}
+cells_sizes={}
+flag_found_layer_name=0 #used for parsing logic
+flag_found_unit=0    #used for parsing logic
+flag_found_cell_name=0  #used for parsing logic
+
+with open(leffile, 'r') as lf:
+    for line in lf:
+        try:
+            first_word= line.split()[0]
+            if (first_word == 'LAYER'):
+                try:
+                    second_word=line.split()[1]
+                    if (second_word in layer_names):
+                        flag_found_layer_name=1
+                        value_found_layer_name=second_word
+                except:
+                    pass
+            if (flag_found_layer_name):
+                if(first_word == 'PITCH'):  #dont add until you find the pitch value
+                    try:
+                        second_word= second_word=line.split()[1]
+                        layers_pitch[value_found_layer_name]=second_word
+                        flag_found_layer_name=0
+                    except:
+                        pass
+            if(first_word == 'UNITS'):    #we then know for sure that the following line conntains the used micron anyways
+                flag_found_unit=1
+                #print "yeey"
+            elif(flag_found_unit==1):
+                if (first_word == 'DATABASE'):
+                    try:
+                        second_word=line.split()[2]     #get the value of the microns
+                        #print second_word
+                        micron_value= int(second_word)
+                        flag_found_unit=0
+                    except:
+                        pass
+            if(first_word == 'MACRO'):    #we then know for sure that its one of the cells we need anyways
+                try:
+                     second_word=line.split()[1]     #get the name of needed cell
+                     #print second_word
+                     flag_found_cell_name=1
+                     value_found_cell_name=second_word
+                except:
+                    pass
+            elif(flag_found_cell_name ==1):
+                if(first_word=='SIZE'):     #parse needed area; no need for all size
+                    try:
+                        #print "reached here"
+                        second_word=line.split()[1]     #get the value of the cell width
+                        area=float(second_word)
+                        #print area
+                        fourth_word=line.split()[3]     #get the value of the cell height
+                        area=area*float(fourth_word)
+                        cells_sizes[value_found_cell_name]=area
+                        flag_found_cell_name=0
+                    except:
+                        pass
+        except:
+            pass
+
+print 'layers_pitch:: ', layers_pitch
+print 'micron_value:: ', micron_value
+print 'cell_areas::', cells_sizes
 
 #print(datastore.keys()[0])
 #print (datastore["modules"][0])
