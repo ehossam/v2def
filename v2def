@@ -1,0 +1,20 @@
+import json
+
+jsonfile= raw_input('please enter the json file name [output of yosys]: ')
+#Read JSON data into the datastore variable
+if jsonfile:
+    with open(jsonfile, 'r') as f:
+        datastore = json.load(f)
+modules_temp=datastore.items()[0]   #word modules
+modules=modules_temp[1].keys()    #mux_4x1 or uart
+pins_temp=modules_temp[1].values()  #get all attributes,cells,ports with their values
+pins=pins_temp[0].items()[3]       #get the actual pins behaviour
+components=pins_temp[0].items()[1]       #get all the cells
+nets= pins_temp[0].items()[2]          #get all the actual nets
+print(nets)
+
+#now read the lef file
+
+
+#print(datastore.keys()[0])
+#print (datastore["modules"][0])
