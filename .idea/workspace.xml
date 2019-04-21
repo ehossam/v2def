@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="15686a9e-0542-4ac5-9aa9-2877b34eb8a5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mux4x1.def" beforeDir="false" afterPath="$PROJECT_DIR$/mux4x1.def" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uart.def" beforeDir="false" afterPath="$PROJECT_DIR$/uart.def" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/v2def" beforeDir="false" afterPath="$PROJECT_DIR$/v2def" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -16,8 +17,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/v2def">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="268">
-              <caret line="290" column="88" selection-start-line="290" selection-start-column="88" selection-end-line="290" selection-end-column="88" />
+            <state relative-caret-position="176">
+              <caret line="312" column="23" lean-forward="true" selection-start-line="312" selection-start-column="23" selection-end-line="312" selection-end-column="23" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -35,6 +36,7 @@
       <find>deff</find>
       <find>100</find>
       <find>default_micron</find>
+      <find>component_name</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -93,6 +95,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="67" y="25" width="1299" height="743" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
       <window_info id="Structure" order="1" weight="0.25" />
@@ -115,8 +118,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/v2def">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="268">
-          <caret line="290" column="88" selection-start-line="290" selection-start-column="88" selection-end-line="290" selection-end-column="88" />
+        <state relative-caret-position="176">
+          <caret line="312" column="23" lean-forward="true" selection-start-line="312" selection-start-column="23" selection-end-line="312" selection-end-column="23" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>

@@ -261,7 +261,7 @@ while True:
         break
 #The actual total area is the following:
 total_area=total_area*default_micron*default_micron
-print total_area
+#print total_area
 actual_area= total_area
 total_area=total_area/core_utilization
 #depending on the aspect ratio
@@ -292,11 +292,28 @@ for i in range(len(vias)):
         if (ia == len(vias.values()[0])-1):
             string_to_write=string_to_write+' ;'
         all_words.append(string_to_write)
+#end of section vias
+string_to_write='END VIAS\n'
+all_words.append(string_to_write)
+
+#componenets section
+string_to_write='COMPONENTS ' + str(len(components[1].values()))+' ;'
+all_words.append(string_to_write)
+
+pushed_list=[]  #used for components parsing logic
+for i in range(len(components[1].values())):
+    string_to_write='  - '+components[1].values()[i]['type']+'_'+str(pushed_list.count(component_name)+1)+' '+\
+                    components[1].values()[i]['type']+' ;'
+    all_words.append(string_to_write)
+
+#Pins section
+#print pins
 
 with open(deffile, 'w') as f:
     for i in all_words:
         f.write(i+'\n')
 
+print (components[1].values()[0])
 
 '''
 print 'design:: ',designs
