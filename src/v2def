@@ -61,6 +61,9 @@ layer_names={'metal1','metal2','metal3','metal4','metal5','metal6'}
 layers_orient_pitch={}
 cells_sizes={}
 vias={}
+core_macros=[]
+corner_macros=[]
+io_macros=[]
 flag_found_layer_name=0 #used for parsing logic
 flag_found_unit=0    #used for parsing logic
 flag_found_cell_name=0  #used for parsing logic
@@ -69,6 +72,11 @@ flag_unfinished_unit=1
 flag_unfinished_cells=1
 flag_unfinished_layers=1
 flag_unfinished_vias=1
+flag_unfinished_sites=1
+flag_got_height=0
+flag_found_corner=0
+flag_found_core=0
+flag_found_io=0
 
 with open(leffile, 'r') as lf:
     for line in lf:
@@ -124,10 +132,43 @@ with open(leffile, 'r') as lf:
                             flag_unfinished_unit=0
                         except:
                             pass
+            if(flag_unfinished_sites):
+                if(first_word== 'SITE'):
+                    try:
+                        second_word=line.split()[1]
+                        if(second_word== 'corner'):
+                            flag_found_corner=1
+                        elif(second_word== 'IO'):
+                            flag_found_io=1
+                        elif(second_word== 'core'):
+                            flag_found_core=1
+                    except:
+                        pass
+                if (first_word== 'SIZE'):
+                    try:
+                        if(flag_found_corner):
+                            #print float(line.split()[3])*default_micron
+                            corner_width=float(line.split()[1])*default_micron
+                            corner_height=float(line.split()[3])*default_micron
+                            flag_found_corner=0
+                        if(flag_found_io):
+                            io_width=float(line.split()[1])*default_micron
+                            io_height=float(line.split()[3])*default_micron
+                            flag_found_io=0
+                        if(flag_found_core):
+                            core_width=float(line.split()[1])*default_micron
+                            core_height=float(line.split()[3])*default_micron
+                            #print core_height
+                            flag_found_core=0
+                            #flag_unfinished_sites=0
+                    except:
+                        #print ("here")
+                        pass
             if(flag_unfinished_cells==1 and flag_unfinished_unit==0):
                 if(first_word == 'MACRO'):    #we then know for sure that its one of the cells we need anyways
                     flag_unfinished_unit=0
                     flag_unfinished_vias=0
+                    flag_unfinished_sites=0
                     #print "got here"
                     try:
                          second_word=line.split()[1]     #get the name of needed cell
@@ -146,8 +187,26 @@ with open(leffile, 'r') as lf:
                             area=float(second_word)
                             #print area
                             fourth_word=line.split()[3]     #get the value of the cell height
+                            #get the height of one cell which can be generalized for all on the fly
+                            if not flag_got_height:
+                                row_height=float(fourth_word)*default_micron
+                                flag_got_height=1
                             area=area*float(fourth_word)
                             cells_sizes[value_found_cell_name]=area
+                            #flag_found_cell_name=0
+                        except:
+                            pass
+                    if(first_word=='SITE'): #get the number of macros of each site
+                        try:
+                            second_word=line.split()[1]
+                            if(second_word== 'core'):
+                                core_macros.append(value_found_cell_name)
+                            elif(second_word== 'corner'):
+                                corner_macros.append(value_found_cell_name)
+                            elif(second_word== 'IO'):
+                                io_macros.append(value_found_cell_name)
+                            else:
+                                pass
                             flag_found_cell_name=0
                         except:
                             pass
@@ -171,7 +230,7 @@ with open(leffile, 'r') as lf:
                     elif(first_word=='RECT'):
                         try:
                             for i in range(4):
-                                #print i
+                                #print line.split()[i+1]
                                 vias[value_found_via_name][name_of_the_layer].append(line.split()[i+1])
                         except:
                             pass
@@ -187,7 +246,6 @@ with open(leffile, 'r') as lf:
                         namespace=0
                 except:
                     pass
-
         except:
             pass
 
@@ -198,7 +256,10 @@ if ('-s' in sys.argv):
     site_width=float(sys.argv[sys.argv.index('-s')+1])
 #check for row_height inputs
 if ('-h' in sys.argv):
-    row_height=float(sys.argv[sys.argv.index('-h')+1])
+    if(float(sys.argv[sys.argv.index('-h')+1])<row_height):
+        print('Ignored row height input; cant be less than cell height')
+    else:
+        row_height=float(sys.argv[sys.argv.index('-h')+1])
 #check for horizontal_magin inputs
 if ('-mh' in sys.argv):
     horizontal_magin=float(sys.argv[sys.argv.index('-mh')+1])
@@ -228,6 +289,7 @@ all_words.append(string_to_write)
 string_to_write='VERSION 5.7 ;'
 all_words.append(string_to_write)
 
+#print vias
 #now parse the Namespacecasesensitive thing
 if(namespace):
     string_to_write='NAMESCASESENSITIVE ON ;'
@@ -265,16 +327,71 @@ total_area=total_area*default_micron*default_micron
 actual_area= total_area
 total_area=total_area/core_utilization
 #depending on the aspect ratio
-ycoordinate=math.floor(math.sqrt(total_area/aspect_ratio))
-xcoordinates=math.floor(total_area/ycoordinate)
+xcoordinate=math.floor(math.sqrt(total_area/aspect_ratio))
+ycoordinates=math.floor(total_area/ycoordinate)
 #xycoordinates=int(math.ceil(math.sqrt(total_area)))
-total_height_core=int(math.ceil(math.sqrt(actual_area)))
+#total_height_core=int(math.ceil(math.sqrt(actual_area)))
 
 #print xycoordinates
 string_to_write='DIEAREA ( 0 0 ) ( '+str(int(xcoordinates))+' '+str(int(ycoordinate)) +' ) ;\n'
 all_words.append(string_to_write)
 
-#(TODO) here add the rows and Tracks
+#row sections
+#(TODO) make sure that ycoordinate is larger than given row_height
+#we have to calculate all heights of all cells of different sites in the design
+total_core_height=0
+total_corner_height=0
+total_io_height=0
+
+for i in range(len(components[1].values())):
+    if components[1].values()[i]['type'] in core_macros:
+        total_core_height=total_core_height+core_height
+    elif components[1].values()[i]['type'] in corner_macros:
+        total_corner_height=total_corner_height+corner_height
+    elif components[1].values()[i]['type'] in io_macros:
+        total_io_height=total_io_height+io_height
+
+num_core_rows= int(math.floor((ycoordinate-total_io_height-total_corner_height)/core_height))
+num_corner_rows=int(math.floor((ycoordinate-total_io_height-total_core_height)/corner_height))
+num_io_rows=int(math.floor((ycoordinate-total_core_height-total_corner_height)/io_height))
+num_rows=num_core_rows+num_corner_rows+num_io_rows
+do_num_core=3
+do_num_corner=3
+do_num_io=3
+nfs=['N','FS']
+i=-1
+#print num_core_rows
+for i in range(num_core_rows):
+    string_to_write='ROW ROW_'+str(i)+' core 0 '+str(int(core_height)*i)+ ' '+ nfs[i%2]+ ' DO'+' '+\
+                    str(do_num_core)+' BY 1 STEP '+str(int(core_width))+' 0 ;'
+    all_words.append(string_to_write)
+#print i
+for ia in range(num_corner_rows):
+    string_to_write='ROW ROW_'+str(i+1)+' corner 0 '+str(int(corner_height)*ia)+ ' '+ nfs[(i+1)%2]+ ' DO'+' '+\
+                    str(do_num_corner)+' BY 1 STEP '+str(int(corner_width))+' 0 ;'
+    i=i+1
+    all_words.append(string_to_write)
+for ib in range(num_io_rows):
+    string_to_write='ROW ROW_'+str(i+1)+' io 0 '+str(int(io_height)*ib)+ ' '+ nfs[(i+1)%2]+ ' DO'+' '+\
+                    str(do_num_io)+' BY 1 STEP '+str(int(io_width))+' 0 ;'
+    i=i+1
+    all_words.append(string_to_write)
+string_to_write=''
+all_words.append(string_to_write)
+
+#the tracks section
+#print layers_orient_pitch
+for i in range(len(layers_orient_pitch.keys())):
+    if(layers_orient_pitch.values()[i][0] == 'X'):
+        spec=int(math.ceil(xcoordinates/float(layers_orient_pitch.values()[i][1])/default_micron))
+    elif(layers_orient_pitch.values()[i][0] == 'Y'):
+        spec=int(math.ceil(ycoordinate/float(layers_orient_pitch.values()[i][1])/default_micron))
+    string_to_write='TRACKS '+ layers_orient_pitch.values()[i][0]+ ' 0 DO '+str(spec)+' LAYER '+\
+        layers_orient_pitch.keys()[i]+' ;'
+    all_words.append(string_to_write)
+#end tracks section
+string_to_write=''
+all_words.append(string_to_write)
 
 #add the vias section
 string_to_write='VIAS '+str(len(vias))+' ;'
@@ -285,7 +402,8 @@ for i in range(len(vias)):
     string_to_write='  '+'- '+vias.keys()[i]
     all_words.append(string_to_write)
     for ia in range(len(vias.values()[i])):
-        string_to_write='  '+'+ RECT '+vias.values()[i].keys()[ia]+ ' ( '+str(float(vias.values()[i].values()[ia][i])\
+        #print float(vias.values()[i].values()[ia][i])
+        string_to_write='  '+'+ RECT '+vias.values()[i].keys()[ia]+ ' ( '+str(float(vias.values()[i].values()[ia][0])\
                         *default_micron)+' '+ str(float(vias.values()[i].values()[ia][1])*default_micron) +' ) ( '+\
                         str(float(vias.values()[i].values()[ia][2])*default_micron)+' '+\
                         str(float(vias.values()[i].values()[ia][3])*default_micron)+' )'
@@ -302,19 +420,108 @@ all_words.append(string_to_write)
 
 pushed_list=[]  #used for components parsing logic
 for i in range(len(components[1].values())):
-    string_to_write='  - '+components[1].values()[i]['type']+'_'+str(pushed_list.count(component_name)+1)+' '+\
+    string_to_write='  - '+components[1].values()[i]['type']+'_'+\
+                    str(pushed_list.count(components[1].values()[i]['type'])+1)+' '+\
                     components[1].values()[i]['type']+' ;'
     all_words.append(string_to_write)
+    pushed_list.append(components[1].values()[i]['type'])
+    #also we need to update the name on the fly to use it in the other sections
+    components[1].values()[i]['type']=components[1].values()[i]['type']+'_'+\
+                                      str(pushed_list.count(components[1].values()[i]['type']))
+
+#end components section
+string_to_write='END COMPONENTS\n'
+all_words.append(string_to_write)
 
 #Pins section
-#print pins
+count_pins=0
+for i in range(len(pins[1].keys())):
+    count_pins=count_pins+len(pins[1].values()[i])
 
+string_to_write='PINS '+str(count_pins)+' ;'
+all_words.append(string_to_write)
+
+#print pins
+for i in range(len(pins[1].keys())):
+    if not(len(pins[1].values()[i]['bits'])==1):
+        for ia in range(len(pins[1].values()[i]['bits'])):
+            string_to_write='  - '+pins[1].keys()[i]+'<'+str(ia)+'> + NET '+pins[1].keys()[i]+'<'+str(ia)+\
+                            '> + DIRECTION '+\
+                            pins[1].values()[i]['direction'].upper()+' + USE SIGNAL ;'
+            all_words.append(string_to_write)
+    else:
+        pass
+#end nets section
+string_to_write=''
+all_words.append(string_to_write)
+
+#nets section
+# get the num of nets first
+nets_num=0
+for i in range(len(nets[1])):
+    nets_num= nets_num +len(nets[1].values()[i]['bits'])
+string_to_write='NETS '+str(nets_num)+' ;'
+all_words.append(string_to_write)
+
+#print len(nets[1])
+#we first iterate over all the nets in the netname section of json
+#then inside each net we look for bit unique numbers
+#then we search for such number in the cells_connection section
+#once found its added added such connection bit
+for i in range(len(nets[1])):
+    #check if it is in ports; has specical PIN keyword added
+    if(nets[1].keys()[i] in pins[1].keys()):
+        flag_is_port=1
+    else:
+        flag_is_port=0
+    for ia in range(len(nets[1].values()[i]['bits'])):
+        if not (len(nets[1].values()[i]['bits']) ==1):
+            string_to_write='- '+nets[1].keys()[i] +'<'+str(ia)+'>'
+            all_words.append(string_to_write)
+            if flag_is_port:
+                string_to_write='  ( PIN '+nets[1].keys()[i] +'<'+str(ia)+'> )'
+                all_words.append(string_to_write)
+        else:
+            string_to_write='- '+nets[1].keys()[i]
+            all_words.append(string_to_write)
+            if flag_is_port:
+                string_to_write='  ( PIN '+nets[1].keys()[i]+ ' )'
+                all_words.append(string_to_write)
+        bit_num=nets[1].values()[i]['bits'][ia]
+        # search in the cells now
+        for ib in range(len(components[1].values())):
+            #print (components[1].values()[ib]['type'])
+            for ic in range(len(components[1].values()[ib]['connections'])):
+                if(bit_num == components[1].values()[ib]['connections'].values()[ic][0]):
+                    string_to_write='  ( '+components[1].values()[ib]['type']+' '+\
+                                    components[1].values()[ib]['connections'].keys()[ic] +' )'
+                    all_words.append(string_to_write)
+                    #counter=counter+1
+                    #print components[1].values()[ib]['connections'].values()[ic][0]
+        string_to_write='  + USE SIGNAL ;'
+        all_words.append(string_to_write)
+
+#end nets section
+string_to_write='END NETS\n'
+all_words.append(string_to_write)
+
+#end design
+string_to_write='END DESIGN'
+all_words.append(string_to_write)
+#print counter
 with open(deffile, 'w') as f:
     for i in all_words:
         f.write(i+'\n')
 
-print (components[1].values()[0])
+#print pins[1]
+#print (components[1].values()[1]['type'])
+#print (components)
+#print nets[1].keys()
 
+#print row_height
+
+#print io_width
+#print core_macros
 '''
 print 'design:: ',designs
 print 'layers_orient_pitch:: ', layers_orient_pitch
