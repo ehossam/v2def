@@ -2,6 +2,7 @@
 
 ## installation and usage:
  -clone the repo into the desired directory
+ 
  -inside src directory: type in. 
 	python v2def [verilogfilename] [leffile] [deffile]
  	(OR) ./v2def [verilogfilename] [leffile] [deffile]
