@@ -1,10 +1,10 @@
 # Conversion Tool from verilog format to def format
 
 ## installation and usage:
- -clone the repo into the desired directory
- -inside src directory: type in 
-	python v2def [verilogfilename] [leffile] [deffile]
- 	(OR) ./v2def [verilogfilename] [leffile] [deffile]
+ -clone the repo into the desired directory.
+ -inside src directory: type in. 
+	python v2def [verilogfilename] [leffile] [deffile].
+ 	(OR) ./v2def [verilogfilename] [leffile] [deffile].
 
 ## features:
 you can add one of the following options:
