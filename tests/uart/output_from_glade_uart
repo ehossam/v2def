@@ -1,0 +1,20 @@
+ui().importDef("default", "autoLayout", "/home/samanoudy/PycharmProjects/MiniProject/tests/uart/uart.def", 0, 0, 1, 1, 1, 0)
+>>> # INFO: Reading DEF file /home/samanoudy/PycharmProjects/MiniProject/tests/uart/uart.def
+# INFO: Creating cell uart view autoLayout
+# WARNING: DEF UNITS of 100 do not match LEF units of 1000
+A scale factor of 10.000000 will be applied
+# INFO: Reading 3 VIAS
+# WARNING: Via M3_M2 already exists in library - ignored.
+# WARNING: Via M2_M1 already exists in library - ignored.
+# WARNING: Via M4_M3 already exists in library - ignored.
+# INFO: Finished reading 3 VIAS
+# INFO: Reading 344 COMPONENTS
+# INFO: Finished reading 344 COMPONENTS
+# INFO: Reading 25 PINS
+# INFO: Finished reading 25 PINS
+# INFO: Reading 2 SPECIALNETS
+# INFO: Finished reading 2 SPECIALNETS
+# INFO: Reading 357 NETS
+# INFO: Finished reading 357 NETS
+# INFO: Finished reading DEF file /home/samanoudy/PycharmProjects/MiniProject/tests/uart/uart.def
+# INFO: Elapsed time = 0.020000s

@@ -2,9 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="15686a9e-0542-4ac5-9aa9-2877b34eb8a5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/mux4x1.def" beforeDir="false" afterPath="$PROJECT_DIR$/mux4x1.def" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/uart.def" beforeDir="false" afterPath="$PROJECT_DIR$/uart.def" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/v2def" beforeDir="false" afterPath="$PROJECT_DIR$/v2def" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/v2def" beforeDir="false" afterPath="$PROJECT_DIR$/src/v2def" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/mux/mux4x1.def" beforeDir="false" afterPath="$PROJECT_DIR$/tests/mux/mux4x1.def" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/mux/mux4x1_json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/uart/uart.def" beforeDir="false" afterPath="$PROJECT_DIR$/tests/uart/uart.def" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/uart/uart_json" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -13,14 +17,14 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/v2def">
+        <entry file="file://$PROJECT_DIR$/src/v2def">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="6060">
-              <caret line="404" column="9" selection-start-line="404" selection-start-column="9" selection-end-line="404" selection-end-column="9" />
+            <state relative-caret-position="15">
+              <caret line="65" lean-forward="true" selection-start-line="65" selection-end-line="65" />
               <folding>
-                <element signature="e#0#11#0" expanded="true" />
+                <element signature="e#23#34#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -32,7 +36,6 @@
     <findStrings>
       <find>flag_found_cell_name</find>
       <find>layers_orient_pitch</find>
-      <find>prin</find>
       <find>deff</find>
       <find>100</find>
       <find>default_micron</find>
@@ -43,6 +46,21 @@
       <find>total_hei</find>
       <find>vias</find>
       <find>VIAS</find>
+      <find>namespace</find>
+      <find>aspect_ratio</find>
+      <find>core_utilization</find>
+      <find>horizontal_magin</find>
+      <find>area</find>
+      <find>sizes</find>
+      <find>actual_area</find>
+      <find>core_he</find>
+      <find>row_height</find>
+      <find>pins</find>
+      <find>vdd</find>
+      <find>specia</find>
+      <find>error using</find>
+      <find>prin</find>
+      <find>dff</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -52,6 +70,7 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/v2def" />
+        <option value="$PROJECT_DIR$/src/v2def" />
       </list>
     </option>
   </component>
@@ -74,6 +93,11 @@
             <path>
               <item name="MiniProject" type="b2602c69:ProjectViewProjectNode" />
               <item name="MiniProject" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="MiniProject" type="b2602c69:ProjectViewProjectNode" />
+              <item name="MiniProject" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -104,10 +128,6 @@
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.29702196" />
       <window_info id="Structure" order="1" weight="0.25" />
-      <window_info anchor="bottom" id="Educational.CheckDetails" />
-      <window_info anchor="bottom" id="Version Control" />
-      <window_info active="true" anchor="bottom" id="Terminal" visible="true" weight="0.36448598" />
-      <window_info anchor="bottom" id="Python Console" weight="0.32866043" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Run" order="2" />
@@ -115,6 +135,10 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Educational.CheckDetails" order="8" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="9" visible="true" weight="0.27102804" />
+      <window_info anchor="bottom" id="Python Console" order="10" weight="0.32866043" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -127,6 +151,16 @@
           <caret line="404" column="9" selection-start-line="404" selection-start-column="9" selection-end-line="404" selection-end-column="9" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/v2def">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="65" lean-forward="true" selection-start-line="65" selection-end-line="65" />
+          <folding>
+            <element signature="e#23#34#0" expanded="true" />
           </folding>
         </state>
       </provider>

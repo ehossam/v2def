@@ -1,0 +1,21 @@
+ui().importDef("default", "autoLayout", "/home/samanoudy/PycharmProjects/MiniProject/tests/HA/HA.def", 0, 0, 1, 1, 1, 0)
+>>> # INFO: Reading DEF file /home/samanoudy/PycharmProjects/MiniProject/tests/HA/HA.def
+# INFO: Creating cell HA view autoLayout
+# WARNING: DEF UNITS of 100 do not match LEF units of 1000
+A scale factor of 10.000000 will be applied
+# INFO: Reading 3 VIAS
+# WARNING: Via M3_M2 already exists in library - ignored.
+# WARNING: Via M2_M1 already exists in library - ignored.
+# WARNING: Via M4_M3 already exists in library - ignored.
+# INFO: Finished reading 3 VIAS
+# INFO: Reading 3 COMPONENTS
+# INFO: Finished reading 3 COMPONENTS
+# INFO: Reading 4 PINS
+# INFO: Finished reading 4 PINS
+# INFO: Reading 2 SPECIALNETS
+# INFO: Finished reading 2 SPECIALNETS
+# INFO: Reading 5 NETS
+# INFO: Finished reading 5 NETS
+# INFO: Finished reading DEF file /home/samanoudy/PycharmProjects/MiniProject/tests/HA/HA.def
+# INFO: Elapsed time = 0.030000s
+

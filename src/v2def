@@ -4,6 +4,9 @@ import json
 import sys
 import datetime
 import math
+import os
+from subprocess import Popen, PIPE
+import warnings
 
 #let's define some default values for calculations
 aspect_ratio= 1
@@ -16,50 +19,75 @@ if (sys.version_info > (3, 0)):
     exit(1)
 
 #get the argumnents from CLI
-#print(sys.argv[0])
-if len(sys.argv) <4 and len(sys.argv)>=2:
+if len(sys.argv) <5 and len(sys.argv)>=2:
     if(sys.argv[1]=='-help'):
-        print('usage is python v2def jsonfilename leffile deffile\nyou can also add one of the following options:\n -a aspect_ratio\n'
+        print('usage is python v2def [verilogfile] [libraryfile] [leffile] [deffile]\nyou can also add one of the following options:\n -a aspect_ratio\n'
               ' -u core_utilization\n -s site_width\n -h row_height\n -mh horizontal_magin\n -mv vertical_magin\n -gnd layer,width'
               '\n -vdd layer,width\n')
         exit(0)
     else:
-        print ('usage is python v2def jsonfilename leffile deffile\nv2def -help for additional info')
+        print ('usage is python v2def [verilogfile] [libraryfile] [leffile] [deffile]\nv2def -help for additional options')
         exit(1)
-jsonfile=sys.argv[1]
-leffile=sys.argv[2]
-deffile=sys.argv[3]
+vfile=sys.argv[1]
+libfile=sys.argv[2]
+leffile=sys.argv[3]
+deffile=sys.argv[4]
+jsonfile=vfile[:-2]+'_json'
 
-#check for some of the input options by the user
-#check for aspect ratio inputs
-if ('-a' in sys.argv):
-    aspect_ratio=float(sys.argv[sys.argv.index('-a')+1])
-#check for core_utilization inputs
-if ('-u' in sys.argv):
-    core_utilization=float(sys.argv[sys.argv.index('-u')+1])
+#get the module naame from verilog
+with open(vfile, 'r') as f:
+    for line in f:
+        try:
+            first_word= line.split()[0]
+            if (first_word== 'module'):
+                second_word=line.split()[1]
+                vmodule=second_word.split("(")[0]
+        except:
+            pass
 
-#print jsonfile
-#jsonfile= raw_input('please enter the json file name [output of yosys]: ')
+if not line:
+    print ('Please input a valid verilog file')
+    exit(1)
+
+#try to convert the given v file into json internally
+#if failed, notify the user
+try:
+    process = Popen(['yosys'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    x='read_verilog '+ vfile+'\nhierarchy -check -top '+vmodule+'\nproc; opt; fsm; opt; techmap; opt' \
+                                                                '\ndfflibmap -liberty '+libfile+\
+        '\nabc -liberty '+libfile+'; opt\nwrite_json '+jsonfile
+    stdout, stderr = process.communicate(input=x)
+    if(stderr):
+        print('Error using Yosys:\n',stderr)
+        exit(1)
+except:
+    print('Error using Yosys:\n',stderr)
+    exit(1)
 
 #Read JSON data into the datastore variable
 if jsonfile:
     with open(jsonfile, 'r') as f:
         datastore = json.load(f)
+
+#cover our tracks as fast as possible yaay
+try:
+    os.remove(jsonfile)
+except:
+    #cant clean it; dont annoy owner
+    pass
+
 designs_temp=datastore.items()[0]   #word modules
 designs=designs_temp[1].keys()    #mux_4x1 or uart
 pins_temp=designs_temp[1].values()  #get all attributes,cells,ports with their values
 pins=pins_temp[0].items()[3]       #get the actual pins behaviour
 components=pins_temp[0].items()[1]       #get all the cells
 nets= pins_temp[0].items()[2]          #get all the actual nets
-#print(nets)
-
-#now read the lef file
-#leffile=raw_input('please enter the lef file name: ')
-#leffile_data=open(leffile,'r')
 
 layer_names={'metal1','metal2','metal3','metal4','metal5','metal6'}
 layers_orient_pitch={}
 cells_sizes={}
+cells_width={}
+cells_heights={}
 vias={}
 core_macros=[]
 corner_macros=[]
@@ -67,23 +95,22 @@ io_macros=[]
 flag_found_layer_name=0 #used for parsing logic
 flag_found_unit=0    #used for parsing logic
 flag_found_cell_name=0  #used for parsing logic
-flag_found_via_name=0
-flag_unfinished_unit=1
-flag_unfinished_cells=1
-flag_unfinished_layers=1
-flag_unfinished_vias=1
-flag_unfinished_sites=1
-flag_got_height=0
-flag_found_corner=0
-flag_found_core=0
-flag_found_io=0
+flag_found_via_name=0   #used for parsing logic
+flag_unfinished_unit=1  #used for parsing logic
+flag_unfinished_cells=1 #used for parsing logic
+flag_unfinished_layers=1    #used for parsing logic
+flag_unfinished_vias=1  #used for parsing logic
+flag_unfinished_sites=1 #used for parsing logic
+flag_got_height=0   #used for parsing logic
+flag_found_corner=0 #used for parsing logic
+flag_found_core=0   #used for parsing logic
+flag_found_io=0 #used for parsing logic
 
 with open(leffile, 'r') as lf:
     for line in lf:
         try:
             first_word= line.split()[0]
             if(flag_unfinished_layers==1 and flag_unfinished_unit==0):
-                #print "here"
                 if (first_word == 'LAYER'):
                     try:
                         second_word=line.split()[1]
@@ -96,7 +123,6 @@ with open(leffile, 'r') as lf:
                     if(first_word == 'DIRECTION'):  #get the direction for this layer
                         try:
                             second_word=line.split()[1]
-                            #print second_word
                             layers_orient_pitch[value_found_layer_name]=[]
                             if(second_word == 'HORIZONTAL'):
                                 layers_orient_pitch[value_found_layer_name].append('Y') #make it Y as in the sample
@@ -110,8 +136,6 @@ with open(leffile, 'r') as lf:
                         try:
                             second_word= line.split()[1]
                             layers_orient_pitch[value_found_layer_name].append(second_word) #add it to a list
-                            #print layers_orient_pitch[value_found_layer_name]
-                            #print "reacjed"
                             flag_found_layer_name=0
                         except:
                             pass
@@ -120,13 +144,10 @@ with open(leffile, 'r') as lf:
                     flag_found_unit=1
                     flag_found_layer_name=0
                     flag_found_cell_name=0
-
-                    #print "yeey"
                 elif(flag_found_unit==1):
                     if (first_word == 'DATABASE'):
                         try:
                             second_word=line.split()[2]     #get the value of the microns
-                            #print second_word
                             micron_value= int(second_word)
                             flag_found_unit=0
                             flag_unfinished_unit=0
@@ -147,7 +168,6 @@ with open(leffile, 'r') as lf:
                 if (first_word== 'SIZE'):
                     try:
                         if(flag_found_corner):
-                            #print float(line.split()[3])*default_micron
                             corner_width=float(line.split()[1])*default_micron
                             corner_height=float(line.split()[3])*default_micron
                             flag_found_corner=0
@@ -158,21 +178,16 @@ with open(leffile, 'r') as lf:
                         if(flag_found_core):
                             core_width=float(line.split()[1])*default_micron
                             core_height=float(line.split()[3])*default_micron
-                            #print core_height
                             flag_found_core=0
-                            #flag_unfinished_sites=0
                     except:
-                        #print ("here")
                         pass
             if(flag_unfinished_cells==1 and flag_unfinished_unit==0):
                 if(first_word == 'MACRO'):    #we then know for sure that its one of the cells we need anyways
                     flag_unfinished_unit=0
                     flag_unfinished_vias=0
                     flag_unfinished_sites=0
-                    #print "got here"
                     try:
                          second_word=line.split()[1]     #get the name of needed cell
-                         #print second_word
                          flag_found_cell_name=1
                          value_found_cell_name=second_word
                          flag_found_unit=0
@@ -182,18 +197,17 @@ with open(leffile, 'r') as lf:
                 elif(flag_found_cell_name ==1):
                     if(first_word=='SIZE'):     #parse needed area; no need for all size
                         try:
-                            #print "reached here"
                             second_word=line.split()[1]     #get the value of the cell width
                             area=float(second_word)
-                            #print area
+                            cells_width[value_found_cell_name]=float(second_word)
                             fourth_word=line.split()[3]     #get the value of the cell height
+                            cells_heights[value_found_cell_name]=float(fourth_word)
                             #get the height of one cell which can be generalized for all on the fly
                             if not flag_got_height:
                                 row_height=float(fourth_word)*default_micron
                                 flag_got_height=1
                             area=area*float(fourth_word)
                             cells_sizes[value_found_cell_name]=area
-                            #flag_found_cell_name=0
                         except:
                             pass
                     if(first_word=='SITE'): #get the number of macros of each site
@@ -230,7 +244,6 @@ with open(leffile, 'r') as lf:
                     elif(first_word=='RECT'):
                         try:
                             for i in range(4):
-                                #print line.split()[i+1]
                                 vias[value_found_via_name][name_of_the_layer].append(line.split()[i+1])
                         except:
                             pass
@@ -239,7 +252,6 @@ with open(leffile, 'r') as lf:
             if(first_word== 'NAMESCASESENSITIVE'):
                 try:
                     second_word=line.split()[1]
-                    #print  second_word
                     if(second_word =='ON'):
                         namespace=1
                     else:
@@ -249,35 +261,67 @@ with open(leffile, 'r') as lf:
         except:
             pass
 
-# the following is a continutaion of the previous options taken by the user
+
+#check for some of the input options by the user
 #this is done here to ensure that all values are overwritten by the user's ones
+#check for aspect ratio inputs
+if ('-a' in sys.argv):
+    aspect_ratio=float(sys.argv[sys.argv.index('-a')+1])
+#check for core_utilization inputs
+if ('-u' in sys.argv):
+    core_utilization=float(sys.argv[sys.argv.index('-u')+1])
 #check for site_width inputs
 if ('-s' in sys.argv):
-    site_width=float(sys.argv[sys.argv.index('-s')+1])
+    print ('We will assume the entered site width is for the core site')
+    core_width=float(sys.argv[sys.argv.index('-s')+1])
 #check for row_height inputs
 if ('-h' in sys.argv):
-    if(float(sys.argv[sys.argv.index('-h')+1])<row_height):
-        print('Ignored row height input; cant be less than cell height')
+    print ('We will assume the entered row height is for those with core site')
+    if(float(sys.argv[sys.argv.index('-h')+1])<core_height):
+        warnings.warn('Ignored row height input; cant be less than cell height')
     else:
-        row_height=float(sys.argv[sys.argv.index('-h')+1])
+        core_height=float(sys.argv[sys.argv.index('-h')+1])
 #check for horizontal_magin inputs
 if ('-mh' in sys.argv):
-    horizontal_magin=float(sys.argv[sys.argv.index('-mh')+1])
+    horizontal_margin=float(sys.argv[sys.argv.index('-mh')+1])
+    if ('-mv' in sys.argv):
+        warnings.warn('Ignored Core Utilization: will satisfy horizontal and vertical margins')
+        core_utilization=1
+    else:
+        warnings.warn('Ignored Core Horizontal Margin Input: will satisfy Core Utilization')
+        horizontal_margin=0
+else:
+    horizontal_margin=0
 #check for vertical_magin inputs
 if ('-mv' in sys.argv):
-    vertical_magin=float(sys.argv[sys.argv.index('-mv')+1])
-#check for gnd inputs
-if ('-gnd' in sys.argv):
-    gnd=float(sys.argv[sys.argv.index('-gnd')+1])
-#check for vdd inputs
-if ('-vdd' in sys.argv):
-    vdd=float(sys.argv[sys.argv.index('-vdd')+1])
+    vertical_margin=float(sys.argv[sys.argv.index('-mv')+1])
+    if not ('-mh' in sys.argv):
+        warnings.warn('Ignored Core Vertical Margin Input: will satisfy Core Utilization')
+        vertical_margin=0
+else:
+    vertical_margin=0
 
+#check for gnd and vdd inputs
+try:
+    if ('-gnd' in sys.argv):
+        gnd=sys.argv[sys.argv.index('-gnd')+1]
+        gnd_metal=gnd.split(',')[0]
+        gnd_width=gnd.split(',')[1]
+    else:
+        gnd_metal=0
+        gnd_width=0
+    if ('-vdd' in sys.argv):
+        vdd=sys.argv[sys.argv.index('-vdd')+1]
+        vdd_metal=vdd.split(',')[0]
+        vdd_width=vdd.split(',')[1]
+    else:
+        vdd_metal=0
+        vdd_width=1
+except:
+    print ('Error using -gnd or -vdd\nPlease cnsult v2def -help for help')
+    exit(1)
 
-# now write to the def file
-#deffile=''
-#deffile= deffile+jsonfile
-#deffile=deffile+'.def'
+## now write to the def file
 
 #add this to header file
 currenttime= datetime.datetime.now()
@@ -289,7 +333,6 @@ all_words.append(string_to_write)
 string_to_write='VERSION 5.7 ;'
 all_words.append(string_to_write)
 
-#print vias
 #now parse the Namespacecasesensitive thing
 if(namespace):
     string_to_write='NAMESCASESENSITIVE ON ;'
@@ -312,37 +355,42 @@ all_words.append(string_to_write)
 #logic to calculate the whole area
 ist=0   #iterator for parsing logic
 total_area=0
+
 while True:
     try:
-        #print components[1].values()[ist]['type']
         component_name=components[1].values()[ist]['type']
-        #print cells_sizes[component_name]
         total_area=total_area+int(cells_sizes[component_name])
         ist=ist+1
     except:
         break
-#The actual total area is the following:
-total_area=total_area*default_micron*default_micron
-#print total_area
-actual_area= total_area
-total_area=total_area/core_utilization
-#depending on the aspect ratio
-xcoordinate=math.floor(math.sqrt(total_area/aspect_ratio))
-ycoordinates=math.floor(total_area/ycoordinate)
-#xycoordinates=int(math.ceil(math.sqrt(total_area)))
-#total_height_core=int(math.ceil(math.sqrt(actual_area)))
 
-#print xycoordinates
-string_to_write='DIEAREA ( 0 0 ) ( '+str(int(xcoordinates))+' '+str(int(ycoordinate)) +' ) ;\n'
+#The actual total area is the following:
+total_area=total_area*default_micron*default_micron/core_utilization
+#depending on the aspect ratio
+xcoordinates=math.floor(math.sqrt(total_area/aspect_ratio))
+ycoordinate=math.floor(aspect_ratio*xcoordinates)
+first_x_coordinate=int(-1*horizontal_margin)
+first_y_coordinate=int(-1*vertical_margin)
+second_x_coordinate=xcoordinates+horizontal_margin
+second_y_coordinate=ycoordinate+vertical_margin
+
+string_to_write='DIEAREA ( '+str(first_x_coordinate)+' '+str(first_y_coordinate)+' ) ( '+\
+                str(int(second_x_coordinate ))+' '+str(int(second_y_coordinate)) +' ) ;\n'
 all_words.append(string_to_write)
 
 #row sections
-#(TODO) make sure that ycoordinate is larger than given row_height
+#make sure that the row height from user is not more than core height
+if(core_height>ycoordinate):
+    warnings.warn('Ignored row height input; otherwise Core Utilization, Horizontal and'
+                  'Vertical Margins will be violated')
+    core_height=row_height
+
 #we have to calculate all heights of all cells of different sites in the design
 total_core_height=0
 total_corner_height=0
 total_io_height=0
 
+#get the total height for each site type
 for i in range(len(components[1].values())):
     if components[1].values()[i]['type'] in core_macros:
         total_core_height=total_core_height+core_height
@@ -351,21 +399,24 @@ for i in range(len(components[1].values())):
     elif components[1].values()[i]['type'] in io_macros:
         total_io_height=total_io_height+io_height
 
+#calculate the number of core,corner,and io rows
 num_core_rows= int(math.floor((ycoordinate-total_io_height-total_corner_height)/core_height))
 num_corner_rows=int(math.floor((ycoordinate-total_io_height-total_core_height)/corner_height))
 num_io_rows=int(math.floor((ycoordinate-total_core_height-total_corner_height)/io_height))
 num_rows=num_core_rows+num_corner_rows+num_io_rows
-do_num_core=3
-do_num_corner=3
-do_num_io=3
+#assume num do is the same as number of rows for each site type
+do_num_core=num_core_rows
+do_num_corner=num_corner_rows
+do_num_io=num_io_rows
 nfs=['N','FS']
 i=-1
-#print num_core_rows
+
+#Assume we start each row from origin 0
 for i in range(num_core_rows):
     string_to_write='ROW ROW_'+str(i)+' core 0 '+str(int(core_height)*i)+ ' '+ nfs[i%2]+ ' DO'+' '+\
                     str(do_num_core)+' BY 1 STEP '+str(int(core_width))+' 0 ;'
     all_words.append(string_to_write)
-#print i
+
 for ia in range(num_corner_rows):
     string_to_write='ROW ROW_'+str(i+1)+' corner 0 '+str(int(corner_height)*ia)+ ' '+ nfs[(i+1)%2]+ ' DO'+' '+\
                     str(do_num_corner)+' BY 1 STEP '+str(int(corner_width))+' 0 ;'
@@ -379,15 +430,21 @@ for ib in range(num_io_rows):
 string_to_write=''
 all_words.append(string_to_write)
 
+
 #the tracks section
-#print layers_orient_pitch
+total_x=abs(second_x_coordinate-first_x_coordinate)
+total_y=abs(second_y_coordinate-first_y_coordinate)
 for i in range(len(layers_orient_pitch.keys())):
     if(layers_orient_pitch.values()[i][0] == 'X'):
-        spec=int(math.ceil(xcoordinates/float(layers_orient_pitch.values()[i][1])/default_micron))
+        spec=int(math.ceil(total_x/float(layers_orient_pitch.values()[i][1])/default_micron))
+        string_to_write='TRACKS '+ layers_orient_pitch.values()[i][0]+ ' '+str(first_x_coordinate)+' DO '+str(spec)+\
+                        ' STEP '+str(int(default_micron*float(layers_orient_pitch.values()[i][1])))+' LAYER '+\
+                        layers_orient_pitch.keys()[i]+' ;'
     elif(layers_orient_pitch.values()[i][0] == 'Y'):
-        spec=int(math.ceil(ycoordinate/float(layers_orient_pitch.values()[i][1])/default_micron))
-    string_to_write='TRACKS '+ layers_orient_pitch.values()[i][0]+ ' 0 DO '+str(spec)+' LAYER '+\
-        layers_orient_pitch.keys()[i]+' ;'
+        spec=int(math.ceil(total_y/float(layers_orient_pitch.values()[i][1])/default_micron))
+        string_to_write='TRACKS '+ layers_orient_pitch.values()[i][0]+ ' '+str(first_y_coordinate)+' DO '+str(spec)+\
+                        ' STEP '+str(int(default_micron*float(layers_orient_pitch.values()[i][1])))+' LAYER '+\
+                        layers_orient_pitch.keys()[i]+' ;'
     all_words.append(string_to_write)
 #end tracks section
 string_to_write=''
@@ -397,12 +454,10 @@ all_words.append(string_to_write)
 string_to_write='VIAS '+str(len(vias))+' ;'
 all_words.append(string_to_write)
 
-#print vias.values()[0].values()[1][0]
 for i in range(len(vias)):
     string_to_write='  '+'- '+vias.keys()[i]
     all_words.append(string_to_write)
     for ia in range(len(vias.values()[i])):
-        #print float(vias.values()[i].values()[ia][i])
         string_to_write='  '+'+ RECT '+vias.values()[i].keys()[ia]+ ' ( '+str(float(vias.values()[i].values()[ia][0])\
                         *default_micron)+' '+ str(float(vias.values()[i].values()[ia][1])*default_micron) +' ) ( '+\
                         str(float(vias.values()[i].values()[ia][2])*default_micron)+' '+\
@@ -436,12 +491,10 @@ all_words.append(string_to_write)
 #Pins section
 count_pins=0
 for i in range(len(pins[1].keys())):
-    count_pins=count_pins+len(pins[1].values()[i])
-
+    count_pins=count_pins+len(pins[1].values()[i]['bits'])
 string_to_write='PINS '+str(count_pins)+' ;'
 all_words.append(string_to_write)
 
-#print pins
 for i in range(len(pins[1].keys())):
     if not(len(pins[1].values()[i]['bits'])==1):
         for ia in range(len(pins[1].values()[i]['bits'])):
@@ -450,9 +503,36 @@ for i in range(len(pins[1].keys())):
                             pins[1].values()[i]['direction'].upper()+' + USE SIGNAL ;'
             all_words.append(string_to_write)
     else:
-        pass
-#end nets section
-string_to_write=''
+        string_to_write='  - '+pins[1].keys()[i]+ ' + NET '+pins[1].keys()[i]+\
+                            ' + DIRECTION '+\
+                            pins[1].values()[i]['direction'].upper()+' + USE SIGNAL ;'
+        all_words.append(string_to_write)
+
+#end pins section
+string_to_write='END PINS\n'
+all_words.append(string_to_write)
+
+#special nets section
+#assume vdd and gnd are always special nets
+string_to_write='SPECIALNETS 2 ;\n- gnd'
+all_words.append(string_to_write)
+
+if(gnd_metal) and (gnd_width):
+    string_to_write='+ WIDTH '+str(gnd_metal)+ ' ' + str(gnd_width)+' ;'
+else:
+    string_to_write='  + USE SIGNAL ;'
+all_words.append(string_to_write)
+
+string_to_write='- vdd'
+all_words.append(string_to_write)
+if(vdd_width and vdd_metal):
+    string_to_write='+ WIDTH '+str(vdd_metal)+ ' '+ str(vdd_width)+' ;'
+else:
+    string_to_write='  + USE SIGNAL ;'
+all_words.append(string_to_write)
+
+#end special nets
+string_to_write='END SPECIALNETS\n'
 all_words.append(string_to_write)
 
 #nets section
@@ -463,7 +543,6 @@ for i in range(len(nets[1])):
 string_to_write='NETS '+str(nets_num)+' ;'
 all_words.append(string_to_write)
 
-#print len(nets[1])
 #we first iterate over all the nets in the netname section of json
 #then inside each net we look for bit unique numbers
 #then we search for such number in the cells_connection section
@@ -490,14 +569,11 @@ for i in range(len(nets[1])):
         bit_num=nets[1].values()[i]['bits'][ia]
         # search in the cells now
         for ib in range(len(components[1].values())):
-            #print (components[1].values()[ib]['type'])
             for ic in range(len(components[1].values()[ib]['connections'])):
                 if(bit_num == components[1].values()[ib]['connections'].values()[ic][0]):
                     string_to_write='  ( '+components[1].values()[ib]['type']+' '+\
                                     components[1].values()[ib]['connections'].keys()[ic] +' )'
                     all_words.append(string_to_write)
-                    #counter=counter+1
-                    #print components[1].values()[ib]['connections'].values()[ic][0]
         string_to_write='  + USE SIGNAL ;'
         all_words.append(string_to_write)
 
@@ -508,26 +584,8 @@ all_words.append(string_to_write)
 #end design
 string_to_write='END DESIGN'
 all_words.append(string_to_write)
-#print counter
+
+#write everything here
 with open(deffile, 'w') as f:
     for i in all_words:
         f.write(i+'\n')
-
-#print pins[1]
-#print (components[1].values()[1]['type'])
-#print (components)
-#print nets[1].keys()
-
-#print row_height
-
-#print io_width
-#print core_macros
-'''
-print 'design:: ',designs
-print 'layers_orient_pitch:: ', layers_orient_pitch
-print 'micron_value:: ', micron_value
-print 'cell_areas::', cells_sizes
-print 'vias_names::', vias
-#print(datastore.keys()[0])
-#print (datastore["modules"][0])
-'''
