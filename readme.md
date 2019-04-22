@@ -5,9 +5,9 @@
 
  - inside the project directory: type in 
 
-	python v2def [verilogfile] [leffile] [deffile]
+		python v2def [verilogfile] [leffile] [deffile]
 
- 	(OR) ./v2def [verilogfile] [leffile] [deffile]
+ 		(OR) ./v2def [verilogfile] [leffile] [deffile]
 
  - the program will internally use yosys library to generate a Gate Level Netlist and use it to parse the design logic.
 
@@ -64,4 +64,9 @@ you can add one of the following options:
  - Tested on four designs mux4x1, uart, half_adder, and round_robin_arbiter (can be found in tests directoty).
 
  - The output def file was read correctly and verified using Glade IC Layout Tool.
+ 
+ - The logs outputted from Glade with image of the Layout of each cell after importing its DEF file are both attached 
+ 	under each design's folder in tests directory.
+	
+ - The Glade library of all the 4 cells used in testing along with all cells extracted from osu035.lef file (can be seen in libs 	directory) is also attached insied tests directory.
 
