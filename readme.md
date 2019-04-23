@@ -5,11 +5,15 @@
 
  - inside the project directory: type in 
 
-	python v2def [verilogfile] [leffile] [deffile]
+		python v2def [verilogfile] [leffile] [deffile]
 
- 	(OR) ./v2def [verilogfile] [leffile] [deffile]
+ 		(OR) ./v2def [verilogfile] [leffile] [deffile]
 
  - the program will internally use yosys library to generate a Gate Level Netlist and use it to parse the design logic.
+
+ - [optional] for convenience you can simply navigate to the project directory and export PATH environment variable to run the script from 	anywhere on your machine. You can copy the following command to your terminal to export PATH:
+		export PATH=$PATH:.
+     then your can use the script by typing v2def or v2def -help to get help
 
 ## features:
 you can add one of the following options:
@@ -61,7 +65,12 @@ you can add one of the following options:
    3. this should yield an output mux4x1.def file which you can see inside tests/mux.
 
 ## Passed Tests:
- - Tested on four designs mux4x1, uart, half_adder, and round_robin_arbiter (can be found in tests directoty).
+ - Tested on eight designs mux4x1, uart, half_adder, round_robin_arbiter, Parallel CRC,  Content Addressable Memory (CAM),  Pri-Encoder - 	Using if-else Statement , and  8-Bit Simple Up Counter  (can all be found in tests directoty).
 
  - The output def file was read correctly and verified using Glade IC Layout Tool.
+ 
+ - The logs outputted from Glade with image of the Layout of each cell after importing its DEF file are both attached 
+ 	under each design's folder in tests directory.
+	
+ - The Glade library of all the 8 cells used in testing along with all cells extracted from osu035.lef file (can be seen in libs 	directory) is also attached insied tests directory.
 

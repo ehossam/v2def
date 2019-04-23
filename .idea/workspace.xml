@@ -1,15 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="15686a9e-0542-4ac5-9aa9-2877b34eb8a5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/v2def" beforeDir="false" afterPath="$PROJECT_DIR$/src/v2def" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/mux/mux4x1.def" beforeDir="false" afterPath="$PROJECT_DIR$/tests/mux/mux4x1.def" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/mux/mux4x1_json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/uart/uart.def" beforeDir="false" afterPath="$PROJECT_DIR$/tests/uart/uart.def" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/uart/uart_json" beforeDir="false" />
-    </list>
+    <list default="true" id="15686a9e-0542-4ac5-9aa9-2877b34eb8a5" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,8 +13,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/v2def">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="15">
-              <caret line="65" lean-forward="true" selection-start-line="65" selection-end-line="65" />
+            <state relative-caret-position="975">
+              <caret line="65" selection-start-line="65" selection-end-line="65" />
               <folding>
                 <element signature="e#23#34#0" expanded="true" />
               </folding>
@@ -126,7 +118,7 @@
   <component name="ToolWindowManager">
     <frame x="67" y="25" width="1299" height="743" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.29702196" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.17476489" />
       <window_info id="Structure" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -157,8 +149,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/v2def">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="65" lean-forward="true" selection-start-line="65" selection-end-line="65" />
+        <state relative-caret-position="975">
+          <caret line="65" selection-start-line="65" selection-end-line="65" />
           <folding>
             <element signature="e#23#34#0" expanded="true" />
           </folding>
