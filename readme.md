@@ -71,6 +71,6 @@ you can add one of the following options:
  
  - The logs outputted from Glade with image of the Layout of each cell after importing its DEF file are both attached 
  	under each design's folder in tests directory.
-	
- - The Glade library of all the 8 cells used in testing along with all cells extracted from osu035.lef file (can be seen in libs 	directory) is also attached insied tests directory.
+
+ - The Glade library of all the 8 cells used in testing along with all cells extracted from osu035.lef file (can be seen in libs 		directory) is also attached insied tests directory.
 
