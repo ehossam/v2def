@@ -7,7 +7,6 @@ import math
 import os
 from subprocess import Popen, PIPE
 import warnings
-from gui import initUI
 
 #let's define some default values for calculations
 aspect_ratio= 1
@@ -18,8 +17,6 @@ default_micron=100
 if (sys.version_info > (3, 0)):
     print('The Program doesnt support Python 3')
     exit(1)
-
-initUI()
 
 #get the argumnents from CLI
 if len(sys.argv) <5 and len(sys.argv)>=2:
